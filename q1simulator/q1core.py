@@ -9,6 +9,9 @@ from .q1parser import Q1Parser
 logger = logging.getLogger(__name__)
 
 
+RT_BUFFER_SIZE = 32
+
+
 class Halt(Exception):
     pass
 
@@ -351,7 +354,7 @@ class CoreClock:
             pass
 
         # q1core halts when buffer is full
-        if len(b) >= 16:
+        if len(b) >= RT_BUFFER_SIZE:
             # q1core will continue when an instruction is read from buffer.
             # When q1core continues the time advantage is `time` - popped time.
             # So, core time will be equal to popped time
