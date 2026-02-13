@@ -3,7 +3,6 @@ from functools import partial
 
 import matplotlib.pyplot as pt
 import qcodes as qc
-from qcodes.instrument import InstrumentBase
 
 from .q1module import Q1Module
 from .q1sequencer import Q1Sequencer
