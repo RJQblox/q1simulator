@@ -3,6 +3,7 @@ from functools import partial
 
 import matplotlib.pyplot as pt
 import qcodes as qc
+from qcodes.instrument import InstrumentBase
 
 from .q1module import Q1Module
 from .q1sequencer import Q1Sequencer
@@ -19,7 +20,7 @@ from qblox_instruments import (
 logger = logging.getLogger(__name__)
 
 
-class Q1Simulator(qc.Instrument, Q1Module):
+class Q1Simulator(Q1Module):
     _pulsar_parameters = [
         'reference_source',
     ]
