@@ -11,6 +11,7 @@ from numpy.typing import NDArray
 
 from .analogue_filter import AnalogueFilter
 from .channel_data import MarkerOutput, SampledOutput
+from .q1configuration import Q1Configuration
 from .triggers import TriggerEvent
 
 
@@ -63,7 +64,9 @@ def _freq2Hz(freq_uint32):
 
 
 def float2int16array(value):
-    # TODO: check on float < -1.0 or > +1.0
+    if np.any(np.abs(value) > 1.0):
+        # TODO do not raise exception, but set error on cluster
+        raise Exception(f"data out of range ({np.min(value):.4f}, {np.max(value):.4f})")
     # Scale to 16 bit value, but store in 32 bit to avoid
     # overflow on later operations.
     return np.array(value*2**15).astype(np.int32)
@@ -157,9 +160,24 @@ class Renderer:
             key: float2int16array(value)
             for key, value in wavedict.items()
         }
+        # TODO do not raise exception, but set error on cluster
+        max_index = max(wavedict.keys(), default=0)
+        if max_index > Q1Configuration.MAX_NUM_WAVEFORMS:
+            raise Exception(f"Too many waveforms: {max_index} > {Q1Configuration.MAX_NUM_WAVEFORMS}")
+        size = sum(len(data) for data in wavedict.values())
+        if size > Q1Configuration.WAVEFORM_MEM_SIZE:
+            raise Exception(f"Too much waveform data: {size} > {Q1Configuration.WAVEFORM_MEM_SIZE}")
 
     def set_weights(self, weightsdict):
         self.acq_weights = weightsdict
+        # TODO do not raise exception, but set error on cluster
+        max_index = max(weightsdict.keys(), default=0)
+        if max_index > Q1Configuration.MAX_NUM_WEIGHTS:
+            raise Exception(f"Too many acquisition weights: {max_index} > {Q1Configuration.MAX_NUM_WEIGHTS}")
+
+        size = sum(len(data) for data in weightsdict.values())
+        if size > Q1Configuration.WEIGHTS_MEM_SIZE:
+            raise Exception(f"Too much weights data {size} > {Q1Configuration.WEIGHTS_MEM_SIZE}")
 
     def set_acquisitions(self, acquisitions):
         self.acquisitions = acquisitions
