@@ -72,6 +72,7 @@ class Q1ProgramBrowser(QtWidgets.QMainWindow):
         self._list_widget = QtWidgets.QListWidget()
         self._list_widget.setMinimumWidth(300)
         self._list_widget.itemSelectionChanged.connect(self._show_program_info)
+        self._list_widget.setSortingEnabled(True)
 
         self._program_details = ProgramDetailsWidget(self)
 
@@ -97,10 +98,9 @@ class Q1ProgramBrowser(QtWidgets.QMainWindow):
         for entry in os.scandir(self._path):
             if not entry.is_dir():
                 continue
-            i = w.count()
-            w.addItem(entry.name)
-            item = w.item(i)
+            item = QtWidgets.QListWidgetItem(entry.name)
             item.setData(QtCore.Qt.UserRole, entry.path)
+            w.addItem(item)
 
     def _show_error_message(self, title, message):
         msg = QtWidgets.QMessageBox()
