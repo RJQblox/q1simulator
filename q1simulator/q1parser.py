@@ -24,7 +24,13 @@ class AsmSyntaxError(Exception):
         return "\n\t" + "\n\t".join(self.args)
 
 
-# S = immediate signed, U = immediate unsigned, R = register, L = label, D = destination register
+# S = immediate signed 32 bit
+# s = immediate signed 16 bit
+# U = immediate unsigned 32 bit
+# u = immediate unsigned 16 bit
+# R = register
+# L = label
+# D = destination register
 mnemonic_args = {
     "illegal": "",
     "stop": "",
@@ -42,24 +48,24 @@ mnemonic_args = {
     "xor": "R,UR,D",
     "asl": "R,UR,D",
     "asr": "R,UR,D",
-    "set_mrk": "UR",
+    "set_mrk": "uR",
     "reset_ph": "",
     "set_freq": "SR",
     "set_ph": "UR",
     "set_ph_delta": "UR",
-    "set_awg_gain": "SR,SR",
-    "set_awg_offs": "SR,SR",
-    "set_cond": "UR,UR,UR,U",
-    "upd_param": "U",
-    "play": "UR,UR,U",
-    "acquire": "U,UR,U",
-    "acquire_weighed": "U,UR,UR,UR,U",
-    "acquire_ttl": "U,UR,U,U",
-    "set_latch_en": "UR,U",
-    "latch_rst": "UR",
-    "wait": "UR",
-    "wait_sync": "UR",
-    "wait_trigger": "UR",
+    "set_awg_gain": "sR,sR",
+    "set_awg_offs": "sR,sR",
+    "set_cond": "uR,uR,uR,u",
+    "upd_param": "u",
+    "play": "uR,uR,u",
+    "acquire": "u,uR,u",
+    "acquire_weighed": "u,uR,uR,uR,u",
+    "acquire_ttl": "u,uR,u,u",
+    "set_latch_en": "uR,u",
+    "latch_rst": "uR",
+    "wait": "uR",
+    "wait_sync": "uR",
+    "wait_trigger": "uR",
 }
 
 
@@ -195,17 +201,25 @@ class Q1Parser:
             elif c == "R":
                 if "R" not in allowed:
                     raise AsmSyntaxError(f"Register operand not support as argument {i}")
-                if "U" in allowed or "S" in allowed:
-                    allow_imm = False
+                for imm in "UuSs":
+                    if imm in allowed:
+                        # no immediate allowed where this is optional for this instruction
+                        allow_imm = False
                 args[i] = self._parse_reg_arg(arg)
                 reg_args.append(i)
             else:
+                # parse immediate (integer)
                 if "R" in allowed:
+                    # no register allowed where this is optional for this instruction
                     select_imm = True
                 if "U" in allowed:
                     args[i] = self._parse_uint32_arg(arg)
+                elif "u" in allowed:
+                    args[i] = self._parse_uint16_arg(arg)
                 elif "S" in allowed:
                     args[i] = self._parse_int32_arg(arg)
+                elif "s" in allowed:
+                    args[i] = self._parse_int16_arg(arg)
                 else:
                     raise AsmSyntaxError(f"Immediate operand not support as argument {i}")
 
@@ -243,5 +257,19 @@ class Q1Parser:
         try:
             res = np.int32(arg)
         except (OverflowError, ValueError):
-            raise AsmSyntaxError(f"Invalid integer: {arg}")
+            raise AsmSyntaxError(f"Invalid integer: {arg}") from None
+        return res
+
+    def _parse_uint16_arg(self, arg):
+        try:
+            res = np.uint16(arg)
+        except (OverflowError, ValueError):
+            raise AsmSyntaxError(f"Invalid unsigned integer: {arg}") from None
+        return res
+
+    def _parse_int16_arg(self, arg):
+        try:
+            res = np.int16(arg)
+        except (OverflowError, ValueError):
+            raise AsmSyntaxError(f"Invalid integer: {arg}") from None
         return res
