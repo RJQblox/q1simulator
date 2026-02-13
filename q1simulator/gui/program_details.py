@@ -26,15 +26,16 @@ class ProgramDetailsWidget(QtWidgets.QWidget):
     def create_table(self):
         table = QtWidgets.QTreeWidget()
         table.setMinimumHeight(400)
-        table.setMinimumWidth(540)
-        table.setColumnCount(7)
-        table.setColumnWidth(0, 100)
-        table.setColumnWidth(1, 100)
-        table.setColumnWidth(2, 50)
-        table.setColumnWidth(3, 50)
-        table.setColumnWidth(4, 50)
-        table.setColumnWidth(5, 90)
+        table.setMinimumWidth(680)
+        table.setColumnCount(8)
+        table.setColumnWidth(0, 80)
+        table.setColumnWidth(1, 180)
+        table.setColumnWidth(2, 40)
+        table.setColumnWidth(3, 40)
+        table.setColumnWidth(4, 40)
+        table.setColumnWidth(5, 120)
         table.setColumnWidth(6, 80)
+        table.setColumnWidth(7, 80)
         table.setHeaderLabels([
             "Channel",
             "Module",
@@ -42,6 +43,7 @@ class ProgramDetailsWidget(QtWidgets.QWidget):
             "Out",
             "In",
             "NCO",
+            "Acq. length",
             "Duration",
             ])
         table.setRootIsDecorated(False)
@@ -91,6 +93,7 @@ class ProgramDetailsWidget(QtWidgets.QWidget):
             rows = []
             for ch_name, settings in data.items():
                 f_nco = settings["nco"]
+                acq_length = settings.get("integration_length_acq")
                 seq_duration = settings.get("duration")
                 if seq_duration is not None:
                     duration = max(seq_duration, duration)
@@ -109,8 +112,11 @@ class ProgramDetailsWidget(QtWidgets.QWidget):
                 item.setText(2, str(settings["paths"]))
                 item.setText(3, str(settings["out_channels"]))
                 item.setText(4, str(settings.get("in_channels", "")))
-                item.setText(5, f"{f_nco/1e6} MHz" if f_nco is not None else "")
-                item.setText(6, duration_text)
+                item.setText(5, f"{f_nco/1e6:.6f} MHz" if f_nco is not None else "")
+                item.setText(6, f"{acq_length} ns" if acq_length else "")
+                item.setText(7, duration_text)
+                if not q1asm:
+                    item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEnabled)
                 rows.append(item)
             table.insertTopLevelItems(0, rows)
 

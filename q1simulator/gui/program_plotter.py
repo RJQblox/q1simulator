@@ -119,6 +119,8 @@ def plot_simulation(
 
     _sim_counter += 1
 
+    # TODO Catch exceptions and show in GUI.
+
     # config channels and  load programs
     for i, ch_name in enumerate(channels):
         ch_conf = config[ch_name]
@@ -132,9 +134,25 @@ def plot_simulation(
             sequencer.mod_en_awg(True)
             sequencer.nco_freq(f_nco)
 
-        for ch in ch_conf["out_channels"]:
-            out_path = ch % 2
-            sequencer.parameters[f'connect_out{ch}'].set('I' if out_path == 0 else 'Q')
+        paths = ch_conf["paths"]
+        out_ch = ch_conf["out_channels"]
+        if paths and len(paths) == len(out_ch):
+            for ch, out_path in zip(out_ch, paths):
+                sequencer.parameters[f'connect_out{ch}'].set('I' if out_path == 0 else 'Q')
+        else:
+            if not out_ch:
+                pass
+            elif len(out_ch) == 1:
+                # assume path 0 is used (Q1Pulse version 0.17.3+)
+                sequencer.parameters[f'connect_out{ch[0]}'].set('I')
+            else:
+                sequencer.parameters[f'connect_out{ch[0]}'].set('I')
+                sequencer.parameters[f'connect_out{ch[1]}'].set('Q')
+                if len(out_ch) == 2:
+                    print(f"ignoring extra output channels {out_ch[2:]} for channel {ch_name}")
+        integration_length_acq = ch_conf.get("integration_length_acq")
+        if integration_length_acq:
+            sequencer.integration_length_acq(integration_length_acq)
 
         sequencer.sequence(path + "/" + ch_conf["sequence"])
         sequencer.sync_en(True)
@@ -152,7 +170,7 @@ def plot_simulation(
                   f"errors: {[str(flag) for flag in status.err_flags]}, log: {status.log}")
 
     # plot
-    output_per_sequencer = True # TODO  @@@
+    output_per_sequencer = True # TODO  @@@ add checkbox for output per channel.
     output = sim.get_output(
         t_min=min_time,
         t_max=max_time,
@@ -197,7 +215,7 @@ def plot_simulation(
         if q is not None:
             pw.plot(t, q, ":", label="ACQ:"+q_label)
 
-    sim.close()
+    # sim.close()
 
     return pw
 
