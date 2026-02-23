@@ -39,7 +39,7 @@ Changelog = "https://github.com/sldesnoo-Delft/q1simulator/blob/main/CHANGELOG.m
 include = ["q1simulator*"]
 
 [tool.setuptools.package-data]
-q1simulator = ["*.hdf5"]
+q1simulator = ["**/*.hdf5"]
 
 [tool.tbump]
 # Uncomment this if your project is hosted on GitHub:
