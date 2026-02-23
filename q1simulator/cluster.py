@@ -23,9 +23,6 @@ class ClusterModule(qc.InstrumentChannel, Q1Module):
         self._slot = slot
         super().init_module(n_sequencers, sim_type)
 
-    def present(self):
-        return True
-
     @property
     def slot_idx(self):
         return self._slot
@@ -35,8 +32,9 @@ class EmptySlot(qc.InstrumentChannel):
     def __init__(self, root_instrument, name):
         super().__init__(root_instrument, name)
 
-    def present(self):
-        return False
+        # Add module QCoDeS parameters
+        self.add_parameter("present", qc.ManualParameter, initial_value=False)
+        self.add_parameter("connected", qc.ManualParameter, initial_value=False)
 
 
 class Cluster(qc.Instrument):
@@ -143,6 +141,8 @@ class Cluster(qc.Instrument):
             for seq_number in seq_numbers:
                 sequencers.append(module.sequencers[seq_number])
 
+        # TODO: run all after starting last with sync_en.
+        print("Run")
         run_sequencers(sequencers)
 
     def stop_sequencer(self, slot: int | None = None, sequencer: int | None = None) -> None:

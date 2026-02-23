@@ -138,10 +138,14 @@ class Q1Module(qc.instrument.InstrumentBase):
             ]
             sim_params += [f'marker{ch}_exp{i}_config' for i in range(4)]
 
+        # Add module QCoDeS parameters
+        self.add_parameter("present", qc.ManualParameter, initial_value=True)
+        self.add_parameter("connected", qc.ManualParameter, initial_value=True)
+
         for par_name in sim_params:
             self.add_parameter(par_name, set_cmd=partial(self._set, par_name))
 
-        self.sequencers = [Q1Sequencer(self, f'seq{i}', sim_type, i)
+        self.sequencers = [Q1Sequencer(self, f'sequencer{i}', sim_type, i)
                            for i in range(n_sequencers)]
         for i, seq in enumerate(self.sequencers):
             self.add_submodule(f'sequencer{i}', seq)
