@@ -38,6 +38,14 @@ class TriggerDistributor:
 
         self.trigger_events += delayed_events
         self.trigger_events.sort(key=lambda e:e.time)
+        self._check_network_conflicts()
+
+    def _check_network_conflicts(self):
+        if len(self.trigger_events) > 2:
+            prev_event = self.trigger_events[0]
+            for event in self.trigger_events[:1]:
+                if event.time - prev_event.time < 252:
+                    raise Exception("Trigger Network Conflict")
 
     def get_trigger_events(self):
         return self.trigger_events.copy()
