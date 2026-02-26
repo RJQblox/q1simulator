@@ -509,6 +509,8 @@ class Q1Sequencer(InstrumentChannel):
                 del self._scope_data[name]
 
     def store_scope_acquisition(self, acq_name):
+        if acq_name not in self.acquisitions:
+            raise Exception(f"Undefined acquisition {acq_name}")
         self._scope_data[acq_name] = {
             "path0": np.cos(np.arange(131072)/1000*2*np.pi),
             "path1": np.sin(np.arange(131072)/1000*2*np.pi),
