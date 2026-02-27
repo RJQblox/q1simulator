@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to Q1Simulator will be documented in this file.
 
+## \[1.1.0] - 2025-02-27
+
+- Corrected RT buffer size to 32 entries.
+- Support qblox-instruments 1.1.1
+- Check waveform value range, data size, max index, and check acquisition weight data size and max index.
+- Fixed output channels in Q1ProgramBrowser when used with files from Q1Pulse v0.17.3+
+
 ## \[1.0.5] - 2025-12-13
 
 - Fixed plotting for tmin > 0.
