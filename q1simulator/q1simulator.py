@@ -42,6 +42,10 @@ class Q1Simulator(Q1Module):
     def get_idn(self):
         return dict(vendor='Q1Simulator', model=self._sim_type, serial='', firmware='')
 
+    def close(self):
+        # Like close of qcodes.Instrument.
+        pass
+
     @property
     def instrument_class(self):
         return InstrumentClass.PULSAR
